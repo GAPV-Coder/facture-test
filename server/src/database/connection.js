@@ -12,17 +12,6 @@ const connectToDatabase = async () => {
         console.log('Successful database connection');
     } catch (error) {
         console.error('Error connecting to the database:', error);
-    } finally {
-        await closeDatabaseConnection();
-    }
-};
-
-const closeDatabaseConnection = async () => {
-    try {
-        await mongoose.connection.close();
-        console.log('Connection closed successfully');
-    } catch (error) {
-        console.error('Error closing connection:', error);
     }
 };
 
