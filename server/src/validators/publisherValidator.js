@@ -4,9 +4,10 @@ const findMatchPublisher = require('../services/publisherServices.js');
 const createPublisherValidations = [
     check('name', 'Enter a name')
         .exists()
+        .withMessage('Name is required')
         .custom(async (value) => {
             const matchedPublisherName = await findMatchPublisher({name: value});
-            if (matchedPublisherName.length > 0) {
+            if (matchedPublisherName) {
                 throw new Error('Publisher name already exists')
             } else {
                 return true;
