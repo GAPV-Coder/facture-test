@@ -1,7 +1,13 @@
+const { validationResult } = require('express-validator');
 const { Author } = require('../models/authorModel.js');
 
 const createAuthor = async (req, res) => {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
         const { fullName, birthDate, cityOfBirth, email } = req.body;
 
         const author = await Author.create({
@@ -57,8 +63,53 @@ const getAuthorByName = async (req, res) => {
     }
 };
 
+const updateAuthor = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+                fullName,
+                birthDate,
+                cityOfBirth,
+                email
+        } = req.body;
+
+        const updatedAuthor = await Author.findByIdAndUpdate(
+            id,
+            {
+                fullName,
+                birthDate,
+                cityOfBirth,
+                email
+            },
+            { new: true },
+        );
+
+        res.json({ author: updatedAuthor });
+    } catch (error) {
+        console.error('Error updating the author:', error);
+        res.status(500).json({
+            error: 'An error occurred while updating the author',
+        });
+    }
+};
+
+const deleteAuthor = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Author.findByIdAndRemove(id);
+        res.json({ message: 'Author successfully removed' });
+    } catch (error) {
+        console.error('Error deleting author:', error);
+        res.status(500).json({
+            error: 'An error occurred while deleting the author',
+        });
+    }
+};
+
 module.exports = {
     createAuthor,
     getAuthors,
-    getAuthorByName
+    getAuthorByName,
+    updateAuthor,
+    deleteAuthor
 };
