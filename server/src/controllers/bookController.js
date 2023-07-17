@@ -57,8 +57,23 @@ const createBook = async (req, res) => {
 
 const getBooks = async (req, res) => {
     try {
-        const books = await Book.find().populate('author publisher');
-        res.json(books);
+        const page = parseInt(req.query.page) || 1;
+        const limit = 12;
+
+        const totalBooks = await Book.countDocuments();
+        const totalPages = Math.ceil(totalBooks / limit);
+        const skip = (page - 1) * limit;
+
+        const books = await Book.find()
+            .populate('author publisher')
+            .skip(skip)
+            .limit(limit);
+
+        res.json({
+            books,
+            currentPage: page,
+            totalPages,
+        });
     } catch (error) {
         console.error('Error fetching all books:', error);
         res.status(500).json({
