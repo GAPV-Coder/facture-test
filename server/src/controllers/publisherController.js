@@ -35,8 +35,20 @@ const createPublisher = async (req, res) => {
 
 const getAllPublishers = async (req, res) => {
     try {
-        const publishers = await Publisher.find();
-        res.json({ publishers });
+        const page = parseInt(req.query.page) || 1;
+        const limit = 12;
+
+        const totalPublishers = await Publisher.countDocuments();
+        const totalPages = Math.ceil(totalPublishers / limit);
+        const skip = (page - 1) * limit;
+
+        const publishers = await Publisher.find().skip(skip).limit(limit);
+
+        res.json({
+            publishers,
+            currentPage: page,
+            totalPages,
+        });
     } catch (error) {
         console.error('Error obtaining publishers:', error);
         res.status(500).json({
