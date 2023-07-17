@@ -7,7 +7,7 @@ const createAuthor = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        
+
         const { fullName, birthDate, cityOfBirth, email } = req.body;
 
         const author = await Author.create({
@@ -31,11 +31,17 @@ const getAuthors = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = 12;
 
-        const authors = await Author.find()
-            .skip((page - 1) * limit)
-            .limit(limit);
+        const totalAuthors = await Author.countDocuments();
+        const totalPages = Math.ceil(totalAuthors / limit);
+        const skip = (page - 1) * limit;
 
-        res.json({ authors });
+        const authors = await Author.find().skip(skip).limit(limit);
+
+        res.json({
+            authors,
+            currentPage: page,
+            totalPages,
+        });
     } catch (error) {
         console.error('Error getting authors:', error);
         res.status(500).json({
@@ -49,7 +55,9 @@ const getAuthorByName = async (req, res) => {
         const { name } = req.query;
 
         if (!name) {
-            return res.status(400).json({ error: 'You must provide an author name' });
+            return res
+                .status(400)
+                .json({ error: 'You must provide an author name' });
         }
 
         const authors = await Author.find({ fullName: name }).exec();
@@ -66,12 +74,7 @@ const getAuthorByName = async (req, res) => {
 const updateAuthor = async (req, res) => {
     try {
         const { id } = req.params;
-        const {
-                fullName,
-                birthDate,
-                cityOfBirth,
-                email
-        } = req.body;
+        const { fullName, birthDate, cityOfBirth, email } = req.body;
 
         const updatedAuthor = await Author.findByIdAndUpdate(
             id,
@@ -79,7 +82,7 @@ const updateAuthor = async (req, res) => {
                 fullName,
                 birthDate,
                 cityOfBirth,
-                email
+                email,
             },
             { new: true },
         );
@@ -111,5 +114,5 @@ module.exports = {
     getAuthors,
     getAuthorByName,
     updateAuthor,
-    deleteAuthor
+    deleteAuthor,
 };
