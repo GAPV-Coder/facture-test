@@ -69,6 +69,10 @@ const getBooks = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
+            if (!books) {
+                books = [];
+            }
+
         res.json({
             books,
             currentPage: page,
@@ -106,10 +110,14 @@ const getBook = async (req, res) => {
             query['publisher.name'] = publisherName;
         }
 
-        const book = await Book.findOne(query).populate('author publisher');
+        const books = await Book.find(query).populate('author publisher');
 
-        if (!book) {
+        if (!books || books.length === 0) {
             return res.status(404).json({ error: 'Book not found' });
+        }
+
+        if (books.length === 1) {
+            return res.json(books[0]);
         }
 
         res.json(book);
